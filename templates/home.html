@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-center">AI-Powered Paraphraser</h1>
+<form id="paraphrasing-form">
+    <div class="mb-3">
+        <label for="input_text" class="form-label">Enter text to paraphrase:</label>
+        <textarea id="input_text" name="input_text" class="form-control" rows="5" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Paraphrase</button>
+</form>
+<div class="mt-4" id="loading-indicator" style="display: none;">
+    <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>Paraphrasing in progress...</p>
+    </div>
+</div>
+<div class="mt-4" id="result" style="display: none;">
+    <h3>Paraphrased Text:</h3>
+    <p id="paraphrased_text" class="border p-3"></p>
+</div>
+
+<script>
+    document.getElementById("paraphrasing-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const inputText = document.getElementById("input_text").value;
+        const loadingIndicator = document.getElementById("loading-indicator");
+        const resultDiv = document.getElementById("result");
+        const paraphrasedText = document.getElementById("paraphrased_text");
+
+        // Show loading indicator
+        loadingIndicator.style.display = "block";
+        resultDiv.style.display = "none";
+
+        try {
+            const response = await fetch("/paraphrase", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: new URLSearchParams({ input_text: inputText })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                paraphrasedText.textContent = data.paraphrased_text;
+                resultDiv.style.display = "block";
+            } else {
+                paraphrasedText.textContent = `Error: ${data.error}`;
+                resultDiv.style.display = "block";
+            }
+        } catch (error) {
+            paraphrasedText.textContent = `Error: ${error.message}`;
+            resultDiv.style.display = "block";
+        } finally {
+            loadingIndicator.style.display = "none";
+        }
+    });
+</script>
+{% endblock %}
